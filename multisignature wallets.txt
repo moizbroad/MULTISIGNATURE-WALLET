@@ -1,0 +1,153 @@
+pragma solidity ^0.0.9;
+
+contract multisignature wallet {
+   // fire event when someon deposite the funds then emit submit event and linkwise also 
+    event deposite (address indexed sender,uint amount  ); // first parameter is sender 2 parameter total amount 
+    event submit   (uint indexed txid ); // submit will log one parameter just , txid is index where teh trns isn stored 
+    event approve  ( address indexed owner , uint indexed txid);
+    event revoke   (address indexed owner , uint indexed Txid);
+    event Execute  (uint indexed  Txid);
+
+
+    struct stored_transcationdata {
+        address to; // the adress where the transcation is execuated 
+        uint value;  //amount of ethers send into 2 address 
+        byte data ; // send data in 2 adress ^
+        bool execuated; //when trns iss execuated they return true 
+    }
+
+    // want to store some  owner in  Array 
+    // mostly fun call bu owner side 
+    address[] public owners ;  //store adress that's why i take adresss
+     // if a adrss is multisignat wallet then return true otherwise return false 
+
+     mapping (address => bool) public isowner; // is owner is name of mappping
+        // store required approval tractional data 
+     uint public required_approval;
+
+     stored_transcationdata[] public stored_transcationdata;// store trans in struct 
+     // address of the owner they check trns is approved by owner or not 
+     mapping( uint=> mapping (address => bool)) public approved; // uint index of the transcation 
+     
+        modifier onlyOwner()
+        {
+            required(isowner[msg.sender], "not owner ");
+            _; // allow execautio of rest of the function 
+        }
+           // txis iss index trans array 
+        modifier txExists(uint _txid)
+        {
+            require (_txid < transcations.length , "tx does not esit ")
+            // if the transcation exist then we will execaute the rest of the code 
+            _;
+        }
+
+        modifier notApproved(uint _txid )
+        {
+            require(!approved[_txid][msg.sender], "tx already approved " )
+            _;
+        }
+        // make sure that trns is not yet execauted 
+        modifier notExecuted(uint _txid)
+        {
+            require(transaction[_txid].executed, ""tc already execauted ")
+            _:
+        } 
+
+
+        // adress is owner adress 
+         constructor( address [] memory _owners, uint _required )
+     { // two parameter
+        require(owners.length >0 "owners required";)
+        require ( _required >0 && _required <= _owners.length, "ïnvalid required numbers of owners "  );
+     
+        // run for loop to save the owners to state variables 
+        for(uint i; i<_owners.length;i++)
+        {
+            // get the adress of the owner from the array into theb variable 
+            address owner= _owners[i];
+            require (owner != address(0),  "invalid owner ");
+            // required unique owner 
+            require (!isowner[owner], "owner is not unique ");
+             // do some check will insert the new into the is owner mapping 
+             isowner[owner] = true;
+        }
+
+        // push owner into the owners  state variables
+        owners.push(owner);
+        // store the owners 
+        required=_required;
+  }
+
+  // able to receive ethers 
+  receive () external payable {
+      emit deposite(msg.sender , ms g.value );// funtion  emit when someone deposite the funds 
+  }
+
+    // nect able to submit only owner submit transcation 
+    // this fun is external only owner able to call the function
+    function submit(address _to , uint value , byte calldata _data)
+    external 
+    onlyOwner // difine the modifier 
+    {
+        // push all submit function variable into the transcation Array 
+        transctions.push(stored_transcationdata({
+            to: _to,
+            value: _value;
+            data: _data,
+            execuated: false
+        } ));
+        // then emit the event submit 
+        emit submit(transcations.length -1 );
+
+    }
+    // oncesb the transcation is completed other owner is able to approve theb transcation 
+
+    function approved(uint _txid); 
+    //  only owner of this  multisig wallet is call this fi
+    external
+    txExists(_txid)
+    notApproved(txid) // if trans is is not approved 
+    notExecuted(txid)  // //................Executed 
+
+    {
+        approved[_txid][msg.sender]=true;
+        emit approve(msg.sender, txid);
+
+    }
+
+
+    function getApprovalCount(uint _txid) private view return (uint count  ) 
+    {
+         for(uint i ;i<owners.length;i++)
+         {
+             if(approved[txid][owners[i]])
+             {
+                 // then increanment the count 
+                 count+=1;
+             }
+         }
+        
+    }
+    
+    function Execute (uint _txid) external txExists(_txid) notExecuted(_txid)
+    {
+        require(_getApprovalCount(_txid)) >= required, "approvals < required ");
+        Transaction storage transaction = transactions[_txid];
+
+        transaction.executed= true;
+        transaction.to.call{value: }
+          
+    }
+
+
+
+
+ 
+
+
+
+
+
+
+}
