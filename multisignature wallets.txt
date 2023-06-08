@@ -1,4 +1,4 @@
-pragma solidity ^0.0.9;
+pragma solidity ^0.0.8;
 
 contract multisignature wallet {
    // fire event when someon deposite the funds then emit submit event and linkwise also 
